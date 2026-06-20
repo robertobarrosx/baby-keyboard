@@ -6,7 +6,7 @@ Aplicação fullscreen onde o bebê pode pressionar **qualquer tecla** (ou tocar
 
 1. Dê duplo clique em `abrir.bat`
 2. Clique ou pressione qualquer tecla para entrar em tela cheia
-3. Cada toque/tecla toca **um único som** — teclas pressionadas juntas são ignoradas (debounce de 150 ms)
+3. Cada toque/tecla toca **um único som** — segurar a mesma tecla não repete, e teclas pressionadas juntas são ignoradas (debounce de 135 ms)
 
 ## Controles
 
@@ -15,7 +15,10 @@ Aplicação fullscreen onde o bebê pode pressionar **qualquer tecla** (ou tocar
 
 ## Sons
 
-Os sons são gravações reais de animais (Mixkit, licença gratuita), salvos na pasta `sounds/`.
+Os sons são gravações reais de animais, salvos na pasta `sounds/`.
+
+- A maior parte dos sons vem do Mixkit, sob a licença gratuita de efeitos sonoros.
+- O som do elefante foi substituído por `Elephant voice - trumpeting.ogg`, do Wikimedia Commons, em versão MP3 transcodificada e licença CC0.
 
 ## Dica
 
@@ -40,3 +43,5 @@ Comando manual para abrir em quiosque no Edge:
 ```
 msedge --kiosk "file:///caminho/completo/index.html" --edge-kiosk-type=fullscreen
 ```
+
+

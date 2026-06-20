@@ -365,25 +365,28 @@
       left: 50%;
       z-index: 12;
       display: flex;
-      gap: 0.45rem;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      row-gap: 0.25rem;
       align-items: center;
+      align-content: center;
       justify-content: center;
       width: min(42rem, calc(100% - 2rem));
-      min-height: 3.2rem;
+      min-height: 4rem;
       transform: translateX(-50%);
     }
 
     .discovery-token {
       display: grid;
       place-items: center;
-      flex: 0 0 2.45rem;
-      width: 2.45rem;
-      height: 2.45rem;
+      flex: 0 0 1.85rem;
+      width: 1.85rem;
+      height: 1.85rem;
       border-radius: 50%;
-      font-size: 1.35rem;
+      font-size: 1rem;
       color: transparent;
       background: rgba(255, 255, 255, 0.24);
-      border: 0.16rem solid rgba(255, 255, 255, 0.42);
+      border: 0.12rem solid rgba(255, 255, 255, 0.42);
       box-shadow: inset 0 0.12rem 0.2rem rgba(255, 255, 255, 0.32);
       transform: scale(0.86);
       transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
@@ -724,16 +727,17 @@
 
       #discovery-strip {
         top: 0.65rem;
-        gap: 0.25rem;
-        min-height: 2.7rem;
+        gap: 0.18rem;
+        row-gap: 0.18rem;
+        min-height: 3.5rem;
       }
 
       .discovery-token {
-        flex-basis: 1.85rem;
-        width: 1.85rem;
-        height: 1.85rem;
-        font-size: 1rem;
-        border-width: 0.11rem;
+        flex-basis: 1.45rem;
+        width: 1.45rem;
+        height: 1.45rem;
+        font-size: 0.78rem;
+        border-width: 0.09rem;
       }
 
       .hill.back {
@@ -929,16 +933,73 @@
         palette: ["#95d5b2", "#fefae0", "#dda15e", "#2d6a4f", "#40916c", "#ffba08", "rgba(252, 247, 218, 0.95)"],
         particles: ["🍌", "🌿", "✨"],
         scenery: ["🌴", "🍌", "🌿", "🌳"]
+      },
+      {
+        emoji: "🐎",
+        name: "Cavalo",
+        call: "Ihihihi!",
+        sound: "sounds/horse.mp3",
+        palette: ["#ffd6a5", "#fefae0", "#e9c46a", "#a7c957", "#6a994e", "#bc6c25", "rgba(255, 248, 226, 0.95)"],
+        particles: ["🐾", "🌾", "✨"],
+        scenery: ["🌾", "🌻", "🌳", "🪵"]
+      },
+      {
+        emoji: "🐺",
+        name: "Lobo",
+        call: "Auuuu!",
+        sound: "sounds/wolf.mp3",
+        palette: ["#adb5bd", "#caf0f8", "#90e0ef", "#74c69d", "#40916c", "#577590", "rgba(236, 246, 255, 0.94)"],
+        particles: ["⭐", "☁️", "✨"],
+        scenery: ["🌲", "🌙", "⭐", "🌿"]
+      },
+      {
+        emoji: "🐓",
+        name: "Galo",
+        call: "Cocoricó!",
+        sound: "sounds/rooster.mp3",
+        palette: ["#f9c74f", "#ffe66d", "#ffadad", "#80b918", "#55a630", "#ef476f", "rgba(255, 247, 219, 0.95)"],
+        particles: ["🌽", "☀️", "✨"],
+        scenery: ["🌽", "🌾", "☀️", "🏡"]
+      },
+      {
+        emoji: "🐴",
+        name: "Burro",
+        call: "Ió-ió!",
+        sound: "sounds/donkey.mp3",
+        palette: ["#b7b7a4", "#ffe8d6", "#ddbea9", "#90a955", "#4f772d", "#a98467", "rgba(250, 244, 236, 0.95)"],
+        particles: ["🐾", "🌾", "✨"],
+        scenery: ["🌵", "🌾", "🪵", "🌿"]
+      },
+      {
+        emoji: "🦢",
+        name: "Ganso",
+        call: "Quá-quá!",
+        sound: "sounds/goose.mp3",
+        palette: ["#a2d2ff", "#bde0fe", "#fff1a8", "#48cae4", "#168aad", "#ffb703", "rgba(238, 251, 255, 0.95)"],
+        particles: ["💧", "🌊", "✨"],
+        scenery: ["🌊", "🌾", "🪷", "🌿"]
+      },
+      {
+        emoji: "🦗",
+        name: "Grilo",
+        call: "Cri-cri!",
+        sound: "sounds/cricket.mp3",
+        palette: ["#d9ed92", "#b5e48c", "#76c893", "#52b788", "#2d6a4f", "#ffd166", "rgba(244, 255, 227, 0.94)"],
+        particles: ["🌿", "⭐", "✨"],
+        scenery: ["🌿", "🌱", "🌼", "🍃"]
       }
     ];
 
     const soundPlayers = new Map();
+    const activeAudios = new Set();
+    const heldKeys = new Set();
     const discovered = new Set();
     let lastTrigger = 0;
     let started = false;
     let lastAnimalIndex = -1;
     let exitingWithEsc = false;
     let completedOnce = false;
+    let keyboardArmed = true;
 
     const startScreen = document.getElementById("start-screen");
     const game = document.getElementById("game");
@@ -962,6 +1023,12 @@
     }
 
     function playAnimalSound(soundPath) {
+      activeAudios.forEach((activeAudio) => {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+      });
+      activeAudios.clear();
+
       let template = soundPlayers.get(soundPath);
       if (!template) {
         template = new Audio(soundPath);
@@ -971,7 +1038,11 @@
 
       const audio = template.cloneNode(true);
       audio.volume = 1;
-      audio.play().catch(() => {});
+      activeAudios.add(audio);
+      audio.addEventListener("ended", () => activeAudios.delete(audio), { once: true });
+      audio.play().catch(() => {
+        activeAudios.delete(audio);
+      });
     }
 
     function randomAnimal() {
@@ -1158,22 +1229,46 @@
       setTimeout(() => { exitingWithEsc = false; }, 300);
     }
 
+    function keyboardEventId(e) {
+      return e.code || e.key || String(e.keyCode || e.which || "unknown");
+    }
+
+    function clearHeldKeys() {
+      keyboardArmed = true;
+      heldKeys.clear();
+    }
+
     function lockKeyboard(e) {
-      if (e.type === "keydown" && e.key === "Escape") {
+      if (e.type === "keyup") {
         stopBrowserShortcut(e);
-        exitGame();
+        heldKeys.delete(keyboardEventId(e));
+        if (heldKeys.size === 0) keyboardArmed = true;
+        return;
+      }
+
+      if (e.type !== "keydown") {
+        stopBrowserShortcut(e);
         return;
       }
 
       stopBrowserShortcut(e);
 
-      if (e.type === "keydown" && !e.repeat) {
-        if (!started) startApp();
-        else if (!exitingWithEsc && !document.fullscreenElement) {
-          document.documentElement.requestFullscreen?.().catch(() => {});
-        }
-        triggerAnimal();
+      const keyId = keyboardEventId(e);
+      heldKeys.add(keyId);
+
+      if (e.key === "Escape") {
+        exitGame();
+        return;
       }
+
+      if (e.repeat || !keyboardArmed) return;
+      keyboardArmed = false;
+
+      if (!started) startApp();
+      else if (!exitingWithEsc && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      }
+      triggerAnimal();
     }
 
     function pointerPoint(e) {
@@ -1207,12 +1302,14 @@
     });
 
     window.addEventListener("blur", () => {
+      clearHeldKeys();
       if (started && !exitingWithEsc) window.focus();
     });
 
     document.addEventListener("fullscreenchange", keepGameFullscreen);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) keepGameFullscreen();
+      if (document.hidden) clearHeldKeys();
+      else keepGameFullscreen();
     });
 
     startScreen.addEventListener("click", handlePointerInput);
@@ -1225,3 +1322,6 @@
   </script>
 </body>
 </html>
+
+
+
